@@ -4686,6 +4686,9 @@ PERL_STATIC_NO_RET void	S_setlocale_failure_panic_i(pTHX_ const unsigned int cat
 #if !(defined(USE_QUERYLOCALE))
 #  if defined(PERL_IN_LOCALE_C)
 #    if defined(USE_LOCALE)
+STATIC const char *	S_calculate_LC_ALL(pTHX_ const char ** individ_locales);
+#define PERL_ARGS_ASSERT_CALCULATE_LC_ALL	\
+	assert(individ_locales)
 #      if defined(USE_POSIX_2008_LOCALE)
 STATIC const char *	S_calculate_LC_ALL(pTHX_ const char ** individ_locales);
 #define PERL_ARGS_ASSERT_CALCULATE_LC_ALL	\
@@ -4739,6 +4742,14 @@ PERL_CALLCONV int	Perl_my_mkstemp(char *templte)
 #define PERL_ARGS_ASSERT_MY_MKSTEMP	\
 	assert(templte)
 
+#endif
+#if !defined(HAS_POSIX_2008_LOCALE)
+#  if defined(PERL_IN_LOCALE_C)
+#    if defined(USE_LOCALE)
+STATIC const char*	S_stdize_locale(pTHX_ const int category, const char* input_locale, const char **buf, Size_t *buf_size);
+#define PERL_ARGS_ASSERT_STDIZE_LOCALE
+#    endif
+#  endif
 #endif
 #if !defined(HAS_RENAME)
 PERL_CALLCONV I32	Perl_same_dirent(pTHX_ const char* a, const char* b)
@@ -5633,9 +5644,6 @@ STATIC void	S_restore_switched_locale(pTHX_ const int category, const char * con
 #define PERL_ARGS_ASSERT_RESTORE_SWITCHED_LOCALE
 STATIC void	S_set_numeric_radix(pTHX_ const bool use_locale);
 #define PERL_ARGS_ASSERT_SET_NUMERIC_RADIX
-STATIC char*	S_stdize_locale(pTHX_ char* locs);
-#define PERL_ARGS_ASSERT_STDIZE_LOCALE	\
-	assert(locs)
 STATIC const char*	S_switch_category_locale_to_template(pTHX_ const int switch_category, const int template_category, const char * template_locale);
 #define PERL_ARGS_ASSERT_SWITCH_CATEGORY_LOCALE_TO_TEMPLATE
 #    if defined(USE_POSIX_2008_LOCALE)
@@ -5647,6 +5655,10 @@ STATIC const char*	S_my_querylocale_i(pTHX_ const unsigned int index);
 STATIC const char *	S_calculate_LC_ALL(pTHX_ const locale_t cur_obj);
 #define PERL_ARGS_ASSERT_CALCULATE_LC_ALL
 #      endif
+#    endif
+#    if defined(USE_QUERYLOCALE)
+STATIC const char *	S_calculate_LC_ALL(pTHX_ const locale_t cur_obj);
+#define PERL_ARGS_ASSERT_CALCULATE_LC_ALL
 #    endif
 #    if defined(WIN32)
 STATIC char*	S_win32_setlocale(pTHX_ int category, const char* locale);

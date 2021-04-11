@@ -3308,7 +3308,17 @@ iTR	|const char *|save_to_buffer|NULLOK const char * string	\
 				    |NN Size_t *buf_size	\
 				    |const Size_t offset
 #  if defined(USE_LOCALE)
-S	|char*	|stdize_locale	|NN char* locs
+#    ifndef HAS_POSIX_2008_LOCALE
+S	|const char*|stdize_locale|const int category			\
+				|NULLOK const char* input_locale	\
+				|NULLOK const char **buf		\
+				|NULLOK Size_t *buf_size
+#    endif
+#    ifdef USE_QUERYLOCALE
+S	|const char *|calculate_LC_ALL|const locale_t cur_obj
+#    else
+S	|const char *|calculate_LC_ALL|NN const char ** individ_locales
+#    endif
 S	|void	|new_collate	|NULLOK const char* newcoll
 S	|void	|new_ctype	|NN const char* newctype
 #    if defined(USE_POSIX_2008_LOCALE)

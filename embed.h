@@ -1493,6 +1493,7 @@
 #  if !(defined(USE_QUERYLOCALE))
 #    if defined(PERL_IN_LOCALE_C)
 #      if defined(USE_LOCALE)
+#define calculate_LC_ALL(a)	S_calculate_LC_ALL(aTHX_ a)
 #        if defined(USE_POSIX_2008_LOCALE)
 #define calculate_LC_ALL(a)	S_calculate_LC_ALL(aTHX_ a)
 #        endif
@@ -1508,6 +1509,13 @@
 #  if !defined(HAS_MKDIR) || !defined(HAS_RMDIR)
 #    if defined(PERL_IN_PP_SYS_C)
 #define dooneliner(a,b)		S_dooneliner(aTHX_ a,b)
+#    endif
+#  endif
+#  if !defined(HAS_POSIX_2008_LOCALE)
+#    if defined(PERL_IN_LOCALE_C)
+#      if defined(USE_LOCALE)
+#define stdize_locale(a,b,c,d)	S_stdize_locale(aTHX_ a,b,c,d)
+#      endif
 #    endif
 #  endif
 #  if !defined(HAS_RENAME)
@@ -1691,7 +1699,6 @@
 #define new_numeric(a)		S_new_numeric(aTHX_ a)
 #define restore_switched_locale(a,b)	S_restore_switched_locale(aTHX_ a,b)
 #define set_numeric_radix(a)	S_set_numeric_radix(aTHX_ a)
-#define stdize_locale(a)	S_stdize_locale(aTHX_ a)
 #define switch_category_locale_to_template(a,b,c)	S_switch_category_locale_to_template(aTHX_ a,b,c)
 #      if defined(USE_POSIX_2008_LOCALE)
 #define emulate_setlocale_i(a,b)	S_emulate_setlocale_i(aTHX_ a,b)
@@ -1699,6 +1706,9 @@
 #        if defined(USE_QUERYLOCALE)
 #define calculate_LC_ALL(a)	S_calculate_LC_ALL(aTHX_ a)
 #        endif
+#      endif
+#      if defined(USE_QUERYLOCALE)
+#define calculate_LC_ALL(a)	S_calculate_LC_ALL(aTHX_ a)
 #      endif
 #      if defined(WIN32)
 #define win32_setlocale(a,b)	S_win32_setlocale(aTHX_ a,b)
