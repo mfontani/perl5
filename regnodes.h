@@ -16,6 +16,7 @@ typedef struct regnode_charclass                 tregnode_ANYOF;
 typedef struct regnode_charclass                 tregnode_ANYOFD;
 typedef struct regnode_1                         tregnode_ANYOFH;
 typedef struct regnode_1                         tregnode_ANYOFHb;
+typedef struct regnode_bbm                       tregnode_ANYOFHbbm;
 typedef struct regnode_1                         tregnode_ANYOFHr;
 typedef struct regnode_1                         tregnode_ANYOFHs;
 typedef struct regnode_charclass                 tregnode_ANYOFL;
@@ -1734,11 +1735,12 @@ EXTCONST U8 PL_regkind[] = {
 };
 #endif
 
-#ifdef REG_COMP_C
+/* PL_regarglen[] - How large is the argument part of the node (in regnodes) */
 
-/* regarglen[] - How large is the argument part of the node (in regnodes) */
-
-static const U8 regarglen[] = {
+#ifndef DOINIT
+EXTCONST U8 PL_regarglen[];
+#else
+EXTCONST U8 PL_regarglen[] = {
 	0,                                   	/* END          */
 	0,                                   	/* SUCCEED      */
 	0,                                   	/* SBOL         */
@@ -1852,6 +1854,10 @@ static const U8 regarglen[] = {
 	0,                                   	/* PSEUDO       */
 	EXTRA_SIZE(struct regnode_p),        	/* REGEX_SET    */
 };
+#endif /* DOINIT */
+
+
+#ifdef REG_COMP_C
 
 /* reg_off_by_arg[] - Which argument holds the offset to the next node */
 
