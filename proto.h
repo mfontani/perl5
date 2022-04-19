@@ -481,9 +481,9 @@ PERL_CALLCONV UV	Perl_cast_uv(NV f)
 			__attribute__warn_unused_result__;
 #define PERL_ARGS_ASSERT_CAST_UV
 
-PERL_CALLCONV bool	Perl_check_reg_nextoper(pTHX_ const regnode* p, const STRLEN extra)
+PERL_CALLCONV bool	Perl_check_regnode_after(pTHX_ const regnode* p, const STRLEN extra)
 			__attribute__warn_unused_result__;
-#define PERL_ARGS_ASSERT_CHECK_REG_NEXTOPER
+#define PERL_ARGS_ASSERT_CHECK_REGNODE_AFTER
 
 PERL_CALLCONV bool	Perl_check_utf8_print(pTHX_ const U8 *s, const STRLEN len)
 			__attribute__visibility__("hidden");
@@ -3305,10 +3305,6 @@ PERL_CALLCONV SV*	Perl_reg_named_buff_nextkey(pTHX_ REGEXP * const rx, const U32
 PERL_CALLCONV SV*	Perl_reg_named_buff_scalar(pTHX_ REGEXP * const rx, const U32 flags);
 #define PERL_ARGS_ASSERT_REG_NAMED_BUFF_SCALAR	\
 	assert(rx)
-PERL_CALLCONV regnode*	Perl_reg_nextoper(pTHX_ regnode* p)
-			__attribute__warn_unused_result__;
-#define PERL_ARGS_ASSERT_REG_NEXTOPER
-
 PERL_CALLCONV void	Perl_reg_numbered_buff_fetch(pTHX_ REGEXP * const rx, const I32 paren, SV * const sv);
 #define PERL_ARGS_ASSERT_REG_NUMBERED_BUFF_FETCH	\
 	assert(rx)
@@ -3338,6 +3334,10 @@ PERL_CALLCONV void	Perl_reginitcolors(pTHX);
 PERL_CALLCONV regnode*	Perl_regnext(pTHX_ regnode* p)
 			__attribute__warn_unused_result__;
 #define PERL_ARGS_ASSERT_REGNEXT
+
+PERL_CALLCONV regnode*	Perl_regnode_after(pTHX_ regnode* p)
+			__attribute__warn_unused_result__;
+#define PERL_ARGS_ASSERT_REGNODE_AFTER
 
 PERL_CALLCONV void	Perl_repeatcpy(char* to, const char* from, I32 len, IV count);
 #define PERL_ARGS_ASSERT_REPEATCPY	\

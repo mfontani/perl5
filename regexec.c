@@ -202,11 +202,11 @@ static const char non_utf8_target_but_utf8_required[]
     while (JUMPABLE(rn)) { \
         const OPCODE type = OP(rn); \
         if (type == SUSPEND || PL_regkind[type] == CURLY) \
-            rn = NEXTOPER_OPCODE(rn,type); \
+            rn = REGNODE_AFTER_opcode(rn,type); \
         else if (type == PLUS) \
-            rn = NEXTOPERT(rn,tregnode_PLUS); \
+            rn = REGNODE_AFTER_type(rn,tregnode_PLUS); \
         else if (type == IFMATCH) \
-            rn = (rn->flags == 0) ? NEXTOPERT(rn,tregnode_IFMATCH) : rn + ARG(rn); \
+            rn = (rn->flags == 0) ? REGNODE_AFTER_type(rn,tregnode_IFMATCH) : rn + ARG(rn); \
         else rn += NEXT_OFF(rn); \
     } \
 } STMT_END
@@ -8489,7 +8489,7 @@ S_regmatch(pTHX_ regmatch_info *reginfo, char *startpos, regnode *prog)
                     cursor = scan;
                     cursor && ( OP(cursor) != END );
                     cursor = ( PL_regkind[ OP(cursor) ] == END )
-                             ? NEXTOPER(cursor)
+                             ? REGNODE_AFTER_dynamic(cursor)
                              : regnext(cursor)
                 ){
                     if ( OP(cursor) != CLOSE )
@@ -8534,11 +8534,11 @@ S_regmatch(pTHX_ regmatch_info *reginfo, char *startpos, regnode *prog)
         case IFTHEN:   /*  (?(cond)A|B)  */
             reginfo->poscache_iter = reginfo->poscache_maxiter; /* Void cache */
             if (sw)
-                next = NEXTOPERT(scan,tregnode_IFTHEN);
+                next = REGNODE_AFTER_type(scan,tregnode_IFTHEN);
             else {
                 next = scan + ARG(scan);
                 if (OP(next) == IFTHEN) /* Fake one. */
-                    next = NEXTOPERT(next,tregnode_IFTHEN);
+                    next = REGNODE_AFTER_type(next,tregnode_IFTHEN);
             }
             break;
 
@@ -8637,7 +8637,7 @@ NULL
             I32 parenfloor = scan->flags;
 
             assert(next); /* keep Coverity happy */
-            if (OP(PREVOPER(next)) == NOTHING) /* LONGJMP */
+            if (OP(REGNODE_BEFORE(next)) == NOTHING) /* LONGJMP */
                 next += ARG(next);
 
             /* XXXX Probably it is better to teach regpush to support
@@ -8659,7 +8659,7 @@ NULL
             ST.count = -1;	/* this will be updated by WHILEM */
             ST.lastloc = NULL;  /* this will be updated by WHILEM */
 
-            PUSH_YES_STATE_GOTO(CURLYX_end, PREVOPER(next), locinput, loceol,
+            PUSH_YES_STATE_GOTO(CURLYX_end, REGNODE_BEFORE(next), locinput, loceol,
                                 script_run_begin);
             NOT_REACHED; /* NOTREACHED */
         }
@@ -8690,7 +8690,7 @@ NULL
 
             min = ARG1(cur_curlyx->u.curlyx.me);
             max = ARG2(cur_curlyx->u.curlyx.me);
-            A = NEXTOPERD(cur_curlyx->u.curlyx.me);
+            A = REGNODE_AFTER_dynamic(cur_curlyx->u.curlyx.me);
             n = ++cur_curlyx->u.curlyx.count; /* how many A's matched */
             ST.save_lastloc = cur_curlyx->u.curlyx.lastloc;
             ST.cache_offset = 0;
@@ -8891,7 +8891,7 @@ NULL
                             maxopenparen);
             REGCP_SET(ST.lastcp);
             PUSH_STATE_GOTO(WHILEM_A_min,
-                /*A*/ NEXTOPERD(ST.save_curlyx->u.curlyx.me),
+                /*A*/ REGNODE_AFTER_dynamic(ST.save_curlyx->u.curlyx.me),
                 locinput, loceol, script_run_begin);
             NOT_REACHED; /* NOTREACHED */
 
@@ -8905,7 +8905,7 @@ NULL
             /* FALLTHROUGH */
 
         case BRANCH:	    /*  /(...|A|...)/ */
-            scan = reg_nextoper(scan); /* scan now points to inner node */
+            scan = REGNODE_AFTER_opcode(scan,state_num); /* scan now points to inner node */
             assert(scan);
             ST.lastparen = rex->lastparen;
             ST.lastcloseparen = rex->lastcloseparen;
@@ -8979,7 +8979,7 @@ NULL
              */
 
             ST.me = scan;
-            scan = NEXTOPERT(scan, tregnode_CURLYM);
+            scan = REGNODE_AFTER_type(scan, tregnode_CURLYM);
 
             ST.lastparen      = rex->lastparen;
             ST.lastcloseparen = rex->lastcloseparen;
@@ -9158,14 +9158,14 @@ NULL
             ST.paren = 0;
             ST.min = 0;
             ST.max = REG_INFTY;
-            scan = NEXTOPERT(scan,tregnode_STAR);
+            scan = REGNODE_AFTER_type(scan,tregnode_STAR);
             goto repeat;
 
         case PLUS:		/*  /A+B/ where A is width 1 char */
             ST.paren = 0;
             ST.min = 1;
             ST.max = REG_INFTY;
-            scan = NEXTOPERT(scan,tregnode_PLUS);
+            scan = REGNODE_AFTER_type(scan,tregnode_PLUS);
             goto repeat;
 
         case CURLYN:		/*  /(A){m,n}B/ where A is width 1 char */
@@ -9176,7 +9176,7 @@ NULL
                 maxopenparen = ST.paren;
             ST.min = ARG1(scan);  /* min to match */
             ST.max = ARG2(scan);  /* max to match */
-            scan = regnext(NEXTOPERT(scan, tregnode_CURLYN));
+            scan = regnext(REGNODE_AFTER_type(scan, tregnode_CURLYN));
 
             /* handle the single-char capture called as a GOSUB etc */
             if (EVAL_CLOSE_PAREN_IS_TRUE(cur_eval,(U32)ST.paren))
@@ -9194,7 +9194,7 @@ NULL
             ST.paren = 0;
             ST.min = ARG1(scan);  /* min to match */
             ST.max = ARG2(scan);  /* max to match */
-            scan = NEXTOPERT(scan, tregnode_CURLY);
+            scan = REGNODE_AFTER_type(scan, tregnode_CURLY);
           repeat:
             /*
             * Lookahead to avoid useless match attempts
@@ -9589,7 +9589,7 @@ NULL
             logical = 0; /* XXX: reset state of logical once it has been saved into ST */
 
             /* execute body of (?...A) */
-            PUSH_YES_STATE_GOTO(IFMATCH_A, NEXTOPERD(scan), ST.start,
+            PUSH_YES_STATE_GOTO(IFMATCH_A, REGNODE_AFTER_dynamic(scan), ST.start,
                                 ST.end, script_run_begin);
             NOT_REACHED; /* NOTREACHED */
 

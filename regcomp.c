@@ -2990,7 +2990,7 @@ S_make_trie(pTHX_ RExC_state_t *pRExC_state, regnode *startbranch,
         convert = first;
     } else {
         /* branch sub-chain */
-        convert = NEXTOPERD( first );
+        convert = REGNODE_AFTER_dynamic( first );
     }
 
     /*  -- First loop and Setup --
@@ -3017,7 +3017,7 @@ S_make_trie(pTHX_ RExC_state_t *pRExC_state, regnode *startbranch,
      */
 
     for ( cur = first ; cur < last ; cur = regnext( cur ) ) {
-        regnode *noper = NEXTOPER_PLUS( cur, PL_regarglen[OP(cur)] );
+        regnode *noper = REGNODE_AFTER_dynamic( cur );
         const U8 *uc;
         const U8 *e;
         int foldlen = 0;
@@ -3246,7 +3246,7 @@ S_make_trie(pTHX_ RExC_state_t *pRExC_state, regnode *startbranch,
 
         for ( cur = first ; cur < last ; cur = regnext( cur ) ) {
 
-            regnode *noper   = NEXTOPERD( cur );
+            regnode *noper   = REGNODE_AFTER_dynamic( cur );
             U32 state        = 1;         /* required init */
             U16 charid       = 0;         /* sanity init */
             U32 wordlen      = 0;         /* required init */
@@ -3324,7 +3324,7 @@ S_make_trie(pTHX_ RExC_state_t *pRExC_state, regnode *startbranch,
                  * on a trieable type. So we need to reset noper back to point at the first regop
                  * in the branch before we call TRIE_HANDLE_WORD()
                 */
-                noper= NEXTOPER(cur);
+                noper= REGNODE_AFTER_dynamic(cur);
             }
             TRIE_HANDLE_WORD(state);
 
@@ -3476,7 +3476,7 @@ S_make_trie(pTHX_ RExC_state_t *pRExC_state, regnode *startbranch,
 
         for ( cur = first ; cur < last ; cur = regnext( cur ) ) {
 
-            regnode *noper   = NEXTOPERD( cur );
+            regnode *noper   = REGNODE_AFTER_dynamic( cur );
 
             U32 state        = 1;         /* required init */
 
@@ -3537,7 +3537,7 @@ S_make_trie(pTHX_ RExC_state_t *pRExC_state, regnode *startbranch,
                  * on a trieable type. So we need to reset noper back to point at the first regop
                  * in the branch before we call TRIE_HANDLE_WORD().
                 */
-                noper= NEXTOPERD(cur);
+                noper= REGNODE_AFTER_dynamic(cur);
             }
             accept_state = TRIE_NODENUM( state );
             TRIE_HANDLE_WORD(accept_state);
@@ -4838,7 +4838,7 @@ S_study_chunk(pTHX_
             data_fake.last_close_opp= &fake_last_close_op;
             minlen = *minlenp;
             next = regnext(scan);
-            scan = NEXTOPERT(scan,tregnode_IFTHEN);
+            scan = REGNODE_AFTER_type(scan,tregnode_IFTHEN);
             DEBUG_PEEP("scan", scan, depth, flags);
             DEBUG_PEEP("next", next, depth, flags);
 
@@ -4903,7 +4903,7 @@ S_study_chunk(pTHX_
                     data_fake.pos_delta = delta;
                     next = regnext(scan);
 
-                    scan = NEXTOPER_PLUS(scan, PL_regarglen[code]);
+                    scan = REGNODE_AFTER_opcode(scan, code);
 
                     if (flags & SCF_DO_STCLASS) {
                         ssc_init(pRExC_state, &this_class);
@@ -5149,7 +5149,7 @@ S_study_chunk(pTHX_
 
                         /* dont use tail as the end marker for this traverse */
                         for ( cur = startbranch ; cur != scan ; cur = regnext( cur ) ) {
-                            regnode * const noper = NEXTOPER_PLUS( cur, PL_regarglen[OP(cur)] );
+                            regnode * const noper = REGNODE_AFTER_dynamic( cur );
                             U8 noper_type = OP( noper );
                             U8 noper_trietype = TRIE_TYPE( noper_type );
 #if defined(DEBUGGING) || defined(NOJUMPTRIE)
@@ -5328,7 +5328,7 @@ S_study_chunk(pTHX_
                 DEBUG_STUDYDATA("after TRIE", data, depth, is_inf, min, stopmin, delta);
             }
             else
-                scan = NEXTOPER_OPCODE(scan,code);
+                scan = REGNODE_AFTER_opcode(scan,code);
             continue;
         } else if (OP(scan) == SUSPEND || OP(scan) == GOSUB) {
             I32 paren = 0;
@@ -5614,11 +5614,11 @@ S_study_chunk(pTHX_
 
             switch (PL_regkind[OP(scan)]) {
             case WHILEM:		/* End of (?:...)* . */
-                scan = NEXTOPER(scan);
+                scan = REGNODE_AFTER_dynamic(scan);
                 goto finish;
             case PLUS:
                 if (flags & (SCF_DO_SUBSTR | SCF_DO_STCLASS)) {
-                    next = NEXTOPER(scan);
+                    next = REGNODE_AFTER_dynamic(scan);
                     if (   (     PL_regkind[OP(next)] == EXACT
                             && ! isEXACTFish(OP(next)))
                         || (flags & SCF_DO_STCLASS))
@@ -5626,7 +5626,7 @@ S_study_chunk(pTHX_
                         mincount = 1;
                         maxcount = REG_INFTY;
                         next = regnext(scan);
-                        scan = NEXTOPER(scan);
+                        scan = REGNODE_AFTER_dynamic(scan);
                         goto do_curly;
                     }
                 }
@@ -5638,7 +5638,7 @@ S_study_chunk(pTHX_
                 min++;
                 /* FALLTHROUGH */
             case STAR:
-                next = NEXTOPER(scan);
+                next = REGNODE_AFTER_dynamic(scan);
 
                 /* This temporary node can now be turned into EXACTFU, and
                  * must, as regexec.c doesn't handle it */
@@ -5672,7 +5672,7 @@ S_study_chunk(pTHX_
                     mincount = 0;
                     maxcount = REG_INFTY;
                     next = regnext(scan);
-                    scan = NEXTOPER(scan);
+                    scan = REGNODE_AFTER_dynamic(scan);
                     goto do_curly;
                 }
                 if (flags & SCF_DO_SUBSTR) {
@@ -5698,7 +5698,7 @@ S_study_chunk(pTHX_
                     I32 lp = (data ? *(data->last_closep) : 0);
                     scan->flags = ((lp <= (I32)U8_MAX) ? (U8)lp : U8_MAX);
                 }
-                scan = NEXTOPER_PLUS(scan, EXTRA_STEP_2ARGS);
+                scan = REGNODE_AFTER_dynamic(scan);
                 next_is_eval = (OP(scan) == EVAL);
               do_curly:
                 if (flags & SCF_DO_SUBSTR) {
@@ -5824,7 +5824,7 @@ S_study_chunk(pTHX_
                       && mutate_ok
                 ) {
                     /* Try to optimize to CURLYN.  */
-                    regnode *nxt = NEXTOPER_PLUS(oscan, EXTRA_STEP_2ARGS);
+                    regnode *nxt = REGNODE_AFTER_type(oscan, tregnode_CURLYX);
                     regnode * const nxt1 = nxt;
 #ifdef DEBUGGING
                     regnode *nxt2;
@@ -5879,7 +5879,7 @@ S_study_chunk(pTHX_
                 ) {
                     /* XXXX How to optimize if data == 0? */
                     /* Optimize to a simpler form.  */
-                    regnode *nxt = NEXTOPER_PLUS(oscan, EXTRA_STEP_2ARGS); /* OPEN */
+                    regnode *nxt = REGNODE_AFTER_type(oscan, tregnode_CURLYX); /* OPEN */
                     regnode *nxt2;
 
                     OP(oscan) = CURLYM;
@@ -5890,7 +5890,8 @@ S_study_chunk(pTHX_
                     /* Need to optimize away parenths. */
                     if ((data->flags & SF_IN_PAR) && OP(nxt) == CLOSE) {
                         /* Set the parenth number.  */
-                        regnode *nxt1 = NEXTOPER_PLUS(oscan, EXTRA_STEP_2ARGS); /* OPEN*/
+                        /* note that we have changed the type of oscan to CURLYM here */
+                        regnode *nxt1 = REGNODE_AFTER_type(oscan, tregnode_CURLYM); /* OPEN*/
 
                         oscan->flags = (U8)ARG(nxt);
                         if (RExC_open_parens) {
@@ -5944,9 +5945,9 @@ S_study_chunk(pTHX_
                     /* Find WHILEM (as in regexec.c) */
                     regnode *nxt = oscan + NEXT_OFF(oscan);
 
-                    if (OP(PREVOPER(nxt)) == NOTHING) /* LONGJMP */
+                    if (OP(REGNODE_BEFORE(nxt)) == NOTHING) /* LONGJMP */
                         nxt += ARG(nxt);
-                    nxt = PREVOPER(nxt);
+                    nxt = REGNODE_BEFORE(nxt);
                     if (nxt->flags & 0xf) {
                         /* we've already set whilem count on this node */
                     } else if (++data->whilem_c < 16) {
@@ -6383,7 +6384,7 @@ S_study_chunk(pTHX_
                 if (flags & SCF_WHILEM_VISITED_POS)
                     f |= SCF_WHILEM_VISITED_POS;
                 next = regnext(scan);
-                nscan = NEXTOPER2(scan);
+                nscan = REGNODE_AFTER_dynamic(scan);
 
                 /* recurse study_chunk() for lookahead body */
                 minnext = study_chunk(pRExC_state, &nscan, minlenp, &deltanext,
@@ -6503,7 +6504,7 @@ S_study_chunk(pTHX_
                 if (flags & SCF_WHILEM_VISITED_POS)
                     f |= SCF_WHILEM_VISITED_POS;
                 next = regnext(scan);
-                nscan = NEXTOPER2(scan);
+                nscan = REGNODE_AFTER_dynamic(scan);
 
                 /* positive lookahead study_chunk() recursion */
                 *minnextp = study_chunk(pRExC_state, &nscan, minnextp,
@@ -8479,7 +8480,7 @@ Perl_re_op_compile(pTHX_ SV ** const patternp, int pat_count,
                 if (OP(first) == MINMOD)
                     sawminmod = 1;
 
-                first = NEXTOPER_PLUS(first,PL_regarglen[OP(first)]);
+                first = REGNODE_AFTER_dynamic(first);
                 first_next= regnext(first);
         }
 
@@ -8513,27 +8514,27 @@ Perl_re_op_compile(pTHX_ SV ** const patternp, int pat_count,
             RExC_rx->intflags |= (OP(first) == MBOL
                            ? PREGf_ANCH_MBOL
                            : PREGf_ANCH_SBOL);
-            first = NEXTOPER(first);
+            first = REGNODE_AFTER_dynamic(first);
             goto again;
         }
         else if (OP(first) == GPOS) {
             RExC_rx->intflags |= PREGf_ANCH_GPOS;
-            first = NEXTOPER(first);
+            first = REGNODE_AFTER_type(first,tregnode_GPOS);
             goto again;
         }
         else if ((!sawopen || !RExC_sawback) &&
             !sawlookahead &&
             (OP(first) == STAR &&
-            PL_regkind[OP(NEXTOPER(first))] == REG_ANY) &&
+            PL_regkind[OP(REGNODE_AFTER_dynamic(first))] == REG_ANY) &&
             !(RExC_rx->intflags & PREGf_ANCH) && !pRExC_state->code_blocks)
         {
             /* turn .* into ^.* with an implied $*=1 */
             const int type =
-                (OP(NEXTOPER(first)) == REG_ANY)
+                (OP(REGNODE_AFTER_dynamic(first)) == REG_ANY)
                     ? PREGf_ANCH_MBOL
                     : PREGf_ANCH_SBOL;
             RExC_rx->intflags |= (type | PREGf_IMPLICIT);
-            first = NEXTOPER(first);
+            first = REGNODE_AFTER_dynamic(first);
             goto again;
         }
         if (sawplus && !sawminmod && !sawlookahead
@@ -8828,7 +8829,7 @@ Perl_re_op_compile(pTHX_ SV ** const patternp, int pat_count,
         regnode *next = NULL;
         U8 nop = 0;
         if (fop == NOTHING || fop == MBOL || fop == SBOL || fop == PLUS) {
-            next = NEXTOPER(first);
+            next = REGNODE_AFTER_dynamic(first);
             nop = OP(next);
         }
         /* It's safe to read through *next only if OP(first) is a regop of
@@ -12641,7 +12642,7 @@ S_reg(pTHX_ RExC_state_t *pRExC_state, I32 paren, I32 *flagp, U32 depth)
                         }
                         if (! REGTAIL(pRExC_state,
                                       REGNODE_OFFSET(
-                                        NEXTOPERD(REGNODE_p(lastbr))),
+                                        REGNODE_AFTER_dynamic(REGNODE_p(lastbr))),
                                       ender))
                         {
                             REQUIRE_BRANCHJ(flagp, 0);
@@ -12804,7 +12805,7 @@ S_reg(pTHX_ RExC_state_t *pRExC_state, I32 paren, I32 *flagp, U32 depth)
 
             /* Append to the previous. */
             shut_gcc_up = REGTAIL(pRExC_state,
-                         REGNODE_OFFSET(NEXTOPERD(REGNODE_p(lastbr))),
+                         REGNODE_OFFSET(REGNODE_AFTER_dynamic(REGNODE_p(lastbr))),
                          ender);
             PERL_UNUSED_VAR(shut_gcc_up);
         }
@@ -12908,7 +12909,7 @@ S_reg(pTHX_ RExC_state_t *pRExC_state, I32 paren, I32 *flagp, U32 depth)
             /* Hook the tails of the branches to the closing node. */
             for (br = REGNODE_p(ret); br; br = regnext(br)) {
                 const U8 op = PL_regkind[OP(br)];
-                regnode *nextoper = NEXTOPER_PLUS(br,PL_regarglen[OP(br)]);
+                regnode *nextoper = REGNODE_AFTER_dynamic(br);
                 if (op == BRANCH) {
                     if (! REGTAIL_STUDY(pRExC_state,
                                         REGNODE_OFFSET(nextoper),
@@ -12926,7 +12927,7 @@ S_reg(pTHX_ RExC_state_t *pRExC_state, I32 paren, I32 *flagp, U32 depth)
                                         ender);
                     PERL_UNUSED_VAR(shut_gcc_up);
                     /* for now we always disable this optimisation * /
-                    regnode *nopr= NEXTOPERT(br,tregnode_BRANCHJ);
+                    regnode *nopr= REGNODE_AFTER_type(br,tregnode_BRANCHJ);
                     if ( OP(nopr) != NOTHING
                          || regnext(nopr) != REGNODE_p(ender))
                     */
@@ -21443,7 +21444,7 @@ S_reginsert(pTHX_ RExC_state_t *pRExC_state, const U8 op,
     }
 
     place = REGNODE_p(operand);	/* Op node, where operand used to be. */
-    src = place + 1; /* NOT NEXTOPER! */
+    src = place + 1; /* NOT REGNODE_AFTER! */
     FLAGS(place) = 0;
     FILL_NODE(operand, op);
 
@@ -22971,10 +22972,10 @@ Perl_regnext(pTHX_ regnode *p)
 }
 
 /*
- - reg_nextoper - find the next node after this one.
+ - regnode_after - find the next node after this one.
  */
 regnode *
-Perl_reg_nextoper(pTHX_ regnode *p)
+Perl_regnode_after(pTHX_ regnode *p)
 {
     if (!p) {
         return NULL;
@@ -22993,10 +22994,10 @@ Perl_reg_nextoper(pTHX_ regnode *p)
 }
 
 bool
-Perl_check_reg_nextoper(pTHX_ const regnode *p, const STRLEN extra)
+Perl_check_regnode_after(pTHX_ const regnode *p, const STRLEN extra)
 {
-    const regnode *nextoper= reg_nextoper((regnode *)p);
-    const regnode *other= _NEXTOPER_PLUS(p, extra);
+    const regnode *nextoper= regnode_after((regnode *)p);
+    const regnode *other= _REGNODE_AFTER_plus(p, extra);
     if (nextoper != other) {
         return FALSE;
     }
@@ -23714,7 +23715,7 @@ S_dumpuntil(pTHX_ const regexp *r, const regnode *start, const regnode *node,
         if (op == CLOSE || op == SRCLOSE || op == WHILEM)
             indent--;
         next = regnext((regnode *)node);
-        nextoper = reg_nextoper((regnode *)node);
+        nextoper = regnode_after((regnode *)node);
 
         /* Where, what. */
         if (op == OPTIMIZED) {
@@ -23747,18 +23748,16 @@ S_dumpuntil(pTHX_ const regexp *r, const regnode *start, const regnode *node,
       after_print:
         if (PL_regkind[op] == BRANCHJ) {
             assert(next);
-            {
-                const regnode *nnode = (OP(next) == LONGJMP
-                                       ? regnext((regnode *)next)
-                                       : next);
-                if (last && nnode > last)
-                    nnode = last;
-                DUMPUNTIL(NEXTOPER_OPCODE(node,op), nnode);
-            }
+            const regnode *nnode = (OP(next) == LONGJMP
+                                   ? regnext((regnode *)next)
+                                   : next);
+            if (last && nnode > last)
+                nnode = last;
+            DUMPUNTIL(nextoper, nnode);
         }
         else if (PL_regkind[op] == BRANCH) {
             assert(next);
-            DUMPUNTIL(NEXTOPER_OPCODE(node,op), next);
+            DUMPUNTIL(nextoper, next);
         }
         else if ( PL_regkind[op]  == TRIE ) {
             const regnode *this_trie = node;
@@ -23818,22 +23817,21 @@ S_dumpuntil(pTHX_ const regexp *r, const regnode *start, const regnode *node,
                 node= next;
         }
         else if ( op == CURLY ) {   /* "next" might be very big: optimizer */
-            DUMPUNTIL(NEXTOPER_PLUS(node, EXTRA_STEP_2ARGS),
-                    NEXTOPER_PLUS(node, EXTRA_STEP_2ARGS) + 1);
+            DUMPUNTIL(nextoper, nextoper + 1); /* +1 is NOT a REGNODE_AFTER */
         }
         else if (PL_regkind[op] == CURLY && op != CURLYX) {
             assert(next);
-            DUMPUNTIL(NEXTOPER_PLUS(node, EXTRA_STEP_2ARGS), next);
+            DUMPUNTIL(nextoper, next);
         }
         else if ( op == PLUS || op == STAR) {
-            DUMPUNTIL(NEXTOPER(node), NEXTOPER(node) + 1);
+            DUMPUNTIL(nextoper, nextoper + 1); /* +1 NOT a REGNODE_AFTER */
         }
         else if (PL_regkind[op] == EXACT || op == ANYOFHs) {
             /* Literal string, where present. */
-            node += NODE_SZ_STR(node); /* NOT NEXTOPER! */
+            node += NODE_SZ_STR(node); /* NOT REGNODE_AFTER! */
         }
         else {
-            node = NEXTOPER_PLUS(node,PL_regarglen[op]);
+            node = REGNODE_AFTER_opcode(node,op);
         }
         if (op == CURLYX || op == OPEN || op == SROPEN)
             indent++;
