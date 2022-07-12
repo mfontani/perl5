@@ -4672,28 +4672,12 @@ PERL_CALLCONV Signal_t	Perl_sighandler(int sig)
 #define PERL_ARGS_ASSERT_SIGHANDLER
 
 #endif
-#if !(defined(USE_POSIX_2008_LOCALE))
-#  if defined(PERL_IN_LOCALE_C)
-#    if defined(USE_LOCALE)
-PERL_STATIC_NO_RET void	S_setlocale_failure_panic_i(pTHX_ const unsigned int cat_index, const char * current, const char * failed, const line_t caller_0_line, const line_t caller_1_line)
-			__attribute__noreturn__;
-#define PERL_ARGS_ASSERT_SETLOCALE_FAILURE_PANIC_I	\
-	assert(failed)
-
-#    endif
-#  endif
-#endif
 #if !(defined(USE_QUERYLOCALE))
 #  if defined(PERL_IN_LOCALE_C)
 #    if defined(USE_LOCALE)
 STATIC const char *	S_calculate_LC_ALL(pTHX_ const char ** individ_locales);
 #define PERL_ARGS_ASSERT_CALCULATE_LC_ALL	\
 	assert(individ_locales)
-#      if defined(USE_POSIX_2008_LOCALE)
-STATIC const char *	S_calculate_LC_ALL(pTHX_ const char ** individ_locales);
-#define PERL_ARGS_ASSERT_CALCULATE_LC_ALL	\
-	assert(individ_locales)
-#      endif
 #    endif
 #  endif
 #endif
@@ -5644,6 +5628,11 @@ STATIC void	S_restore_switched_locale(pTHX_ const int category, const char * con
 #define PERL_ARGS_ASSERT_RESTORE_SWITCHED_LOCALE
 STATIC void	S_set_numeric_radix(pTHX_ const bool use_locale);
 #define PERL_ARGS_ASSERT_SET_NUMERIC_RADIX
+PERL_STATIC_NO_RET void	S_setlocale_failure_panic_i(pTHX_ const unsigned int cat_index, const char * current, const char * failed, const line_t caller_0_line, const line_t caller_1_line)
+			__attribute__noreturn__;
+#define PERL_ARGS_ASSERT_SETLOCALE_FAILURE_PANIC_I	\
+	assert(failed)
+
 STATIC const char*	S_switch_category_locale_to_template(pTHX_ const int switch_category, const int template_category, const char * template_locale);
 #define PERL_ARGS_ASSERT_SWITCH_CATEGORY_LOCALE_TO_TEMPLATE
 #    if defined(USE_POSIX_2008_LOCALE)
@@ -5651,10 +5640,6 @@ STATIC const char*	S_emulate_setlocale_i(pTHX_ const unsigned int index, const c
 #define PERL_ARGS_ASSERT_EMULATE_SETLOCALE_I
 STATIC const char*	S_my_querylocale_i(pTHX_ const unsigned int index);
 #define PERL_ARGS_ASSERT_MY_QUERYLOCALE_I
-#      if defined(USE_QUERYLOCALE)
-STATIC const char *	S_calculate_LC_ALL(pTHX_ const locale_t cur_obj);
-#define PERL_ARGS_ASSERT_CALCULATE_LC_ALL
-#      endif
 #    endif
 #    if defined(USE_QUERYLOCALE)
 STATIC const char *	S_calculate_LC_ALL(pTHX_ const locale_t cur_obj);
