@@ -1082,6 +1082,10 @@ Perl_magic_get(pTHX_ SV *sv, MAGIC *mg)
         }
         break;
     case '\020':
+        if (strEQ(remaining, "ID")) {   /* ^PID */
+            sv_copypv(sv, get_sv("$", 0));
+            break;
+        }
         sv_setiv(sv, (IV)PL_perldb);
         break;
     case '\023':		/* ^S */
@@ -3139,6 +3143,10 @@ Perl_magic_set(pTHX_ SV *sv, MAGIC *mg)
         }
         break;
     case '\020':	/* ^P */
+        if (strEQ(mg->mg_ptr+1, "ID")) {
+            sv_copypv(get_sv("$", 0), sv);
+            break;
+        }
           PL_perldb = SvIV(sv);
           if (PL_perldb && !PL_DBsingle)
               init_debugger();

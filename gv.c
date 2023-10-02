@@ -2244,6 +2244,8 @@ S_gv_magicalize(pTHX_ GV *gv, HV *stash, const char *name, STRLEN len,
                     paren = RX_BUFF_IDX_CARET_POSTMATCH;
                     goto storeparen;
                 }
+                if (memEQs(name, len, "\020ID")) /* ${^PID} */
+                    goto magicalize;
                 break;
             case '\023':
                 if (memEQs(name, len, "\023AFE_LOCALES"))
